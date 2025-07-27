@@ -1,0 +1,37 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Virtualenv
+venv/
+env/
+ENV/
+
+# VSCode
+.vscode/
+
+# Flask and uploads
+instance/
+*.db
+*.sqlite3
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Others
+*.webm
+*.mp4
+*.wav
+*.ogg
+*.m4a
+*.avi
+*.mov
+
+# Pycache and compiled files
+*.egg-info/
+*.egg/
+

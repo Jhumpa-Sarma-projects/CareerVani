@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-container" style="font-family: 'Segoe UI', sans-serif; padding: 40px 20px; background: radial-gradient(circle at center, #1c1c2d, #0a0a13); color: white; min-height: 100vh;">
+  <div class="glass-card" style="max-width: 700px; margin: auto; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(12px); border-radius: 20px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);">
+
+    <h2 style="color: #00ffc8;">🎙️ Speak to Get Feedback</h2>
+    <p style="font-size: 15px; color: #ccc;">Click on the mic to start speaking. When you're done, click Stop and Submit to get feedback.</p>
+
+    <div style="text-align: center; margin-top: 20px;">
+      <button id="recordBtn" class="btn-nav" style="background: linear-gradient(135deg, #00ffc8, #0077ff); padding: 10px 25px; border-radius: 40px; border: none; color: white; font-size: 16px;">🎤 Start Recording</button>
+      <button id="stopBtn" class="btn-nav" style="display:none; background: linear-gradient(135deg, #ff5e62, #ff9966); padding: 10px 25px; border-radius: 40px; border: none; color: white; font-size: 16px;">🛑 Stop</button>
+    </div>
+
+    <form id="speechForm" method="POST" action="{{ url_for('main.spoken_result') }}">
+      <input type="hidden" name="transcript" id="transcriptInput">
+      <button type="submit" id="submitBtn" class="btn-nav" style="margin-top: 30px; display:none; background: linear-gradient(135deg, #00ffc8, #0077ff); padding: 10px 25px; border-radius: 40px; text-decoration: none; color: white; font-weight: bold;">📩 Submit</button>
+    </form>
+
+    <p id="preview" style="margin-top: 25px; color: #ccc;"></p>
+
+    {% if transcript %}
+    <div style="margin-top: 30px;">
+      <h3 style="color: #00ffc8;">📝 Your Transcript</h3>
+      <p style="color: #eee;">{{ transcript }}</p>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <h3 style="color: #00ffc8;">✅ Corrected Text</h3>
+      <p style="color: #eee;">{{ corrected_text }}</p>
+    </div>
+
+    {% if custom_suggestion %}
+    <div style="margin-top: 20px;">
+      <h3 style="color: #00ffc8;">💡 Suggested Correction</h3>
+      <p style="color: #ffd;">{{ custom_suggestion }}</p>
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 20px;">
+      <h3 style="color: #00ffc8;">📌 Grammar Suggestions</h3>
+      <ul style="color: #eee;">
+        {% for suggestion in suggestions %}
+        <li>{{ suggestion }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <h3 style="color: #00ffc8;">📊 Pronunciation Score</h3>
+      <p style="color: #eee;">{{ score }}/10 &nbsp;&nbsp; <strong>{{ badge }}</strong></p>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+  let recognition;
+  const recordBtn = document.getElementById('recordBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const transcriptInput = document.getElementById('transcriptInput');
+  const preview = document.getElementById('preview');
+
+  recordBtn.onclick = () => {
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-IN';
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+      recordBtn.style.display = 'none';
+      stopBtn.style.display = 'inline-block';
+      preview.innerHTML = "🎙️ Listening...";
+    };
+
+    recognition.onresult = (event) => {
+      const text = event.results[0][0].transcript;
+      transcriptInput.value = text;
+      preview.innerHTML = "✅ Captured: <i>" + text + "</i>";
+      submitBtn.style.display = 'inline-block';
+    };
+
+    recognition.onerror = (e) => {
+      preview.innerHTML = "❌ Error: " + e.error;
+    };
+
+    recognition.start();
+  };
+
+  stopBtn.onclick = () => {
+    recognition.stop();
+    stopBtn.style.display = 'none';
+    recordBtn.style.display = 'inline-block';
+  };
+</script>
+{% endblock %}

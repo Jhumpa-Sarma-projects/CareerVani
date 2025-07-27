@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CareerVani | Mock Video Interview</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      background: radial-gradient(circle at center, #1c1c2d, #0a0a13);
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+    }
+
+    .video-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .glass-box {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      animation: popIn 0.6s ease;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 14px;
+      margin: 15px 0;
+      background: #000;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 40px;
+      background: linear-gradient(135deg, #00ffc8, #0077ff);
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+      box-shadow: 0 0 10px #00ffc8;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px #00ffc8;
+    }
+
+    .question-text {
+      font-size: 18px;
+      text-align: center;
+      margin: 10px 0;
+      color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="video-container">
+    <div class="glass-box">
+      <h2>🎥 Mock Video Interview</h2>
+      <p id="question" class="question-text">{{ question }}</p>
+
+      <video id="preview" autoplay muted playsinline></video>
+
+      <div style="text-align: center;">
+        <button id="start" class="btn">🎬 Start Recording</button>
+        <button id="stop" class="btn" disabled>🛑 Stop</button>
+        <button id="submit" class="btn" disabled>📤 Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    const videoPreview = document.getElementById('preview');
+    const startBtn = document.getElementById('start');
+    const stopBtn = document.getElementById('stop');
+    const submitBtn = document.getElementById('submit');
+    const questionBox = document.getElementById('question');
+
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+      videoPreview.srcObject = stream;
+      mediaRecorder = new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = function (e) {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = function () {
+        submitBtn.disabled = false;
+      };
+    });
+
+    startBtn.onclick = () => {
+      recordedChunks = [];
+      mediaRecorder.start();
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    };
+
+    submitBtn.onclick = () => {
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const formData = new FormData();
+      formData.append("video", blob);
+
+      fetch("/submit_video_response", {
+        method: "POST",
+        body: formData
+      }).then(res => res.json()).then(data => {
+        if (data.next_question) {
+          questionBox.innerText = data.next_question;
+          submitBtn.disabled = true;
+        }
+      }).catch(err => console.error("Upload error:", err));
+    };
+  </script>
+</body>
+</html>
+{% endblock %}

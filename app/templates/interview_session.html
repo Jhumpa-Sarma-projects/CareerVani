@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mock Interview Session | CareerVani</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at center, #1c1c2d, #0a0a13);
+      color: white;
+      overflow-x: hidden;
+    }
+
+    .interview-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .glass-box {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 30px rgba(0, 255, 200, 0.2);
+      max-width: 700px;
+      width: 100%;
+      animation: popIn 0.7s ease-in-out;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-box h2 {
+      font-size: 22px;
+      color: #00ffc8;
+      margin-bottom: 20px;
+    }
+
+    .glass-box p {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    textarea {
+      width: 100%;
+      height: 130px;
+      border-radius: 10px;
+      padding: 15px;
+      border: none;
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      font-size: 15px;
+      margin-top: 15px;
+      resize: none;
+      outline: none;
+    }
+
+    .btn-next {
+      margin-top: 20px;
+      padding: 12px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(135deg, #00ffc8, #0077ff);
+      color: white;
+      box-shadow: 0 0 15px #00ffc8;
+      transition: 0.3s ease;
+    }
+
+    .btn-next:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px #00ffc8;
+    }
+
+    .progress {
+      margin-top: 15px;
+      font-size: 13px;
+      color: #aaa;
+      text-align: right;
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="interview-container">
+    <div class="glass-box">
+      <h2>🎙️ Interview Question</h2>
+      <p><strong>{{ question }}</strong></p>
+
+      <form method="POST" action="{{ url_for('main.submit_answer') }}">
+        <textarea name="answer" placeholder="Type your response here..." required></textarea>
+        <input type="hidden" name="question_index" value="{{ index }}">
+        <input type="hidden" name="question" value="{{ question }}">
+        <button type="submit" class="btn-next">
+          {% if index + 1 == total %}
+            Finish Interview & Download
+          {% else %}
+            Next Question →
+          {% endif %}
+        </button>
+      </form>
+
+      <div class="progress">
+        Question {{ index + 1 }} of {{ total }}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+{% endblock %}

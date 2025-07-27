@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-container" style="font-family: 'Segoe UI', sans-serif; padding: 40px 20px; background: radial-gradient(circle at center, #1c1c2d, #0a0a13); color: white; min-height: 100vh;">
+  <div class="glass-card" style="max-width: 800px; margin: auto; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);">
+    <h2 style="color: #00ffc8; font-size: 26px; margin-bottom: 10px;">🌐 Regional Language Feedback</h2>
+
+    {% if transcript %}
+      <p><b>🗣️ Original Transcript:</b> <i>{{ transcript }}</i></p>
+      <p><b>🌍 Translated (English):</b> <i>{{ translated_text }}</i></p>
+
+      <div style="margin-top: 20px;">
+        <b>🔍 Grammar Suggestions:</b>
+        <div style="background: rgba(255, 255, 255, 0.03); border-left: 4px solid #00ffc8; border-radius: 12px; padding: 12px; margin-top: 10px; font-size: 14px; color: #ccc;">
+          {% if suggestions %}
+            <ul style="padding-left: 20px;">
+              {% for suggestion in suggestions %}
+                <li>{{ suggestion }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>No grammar suggestions detected. ✅</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <a href="{{ url_for('main.regional_voice_input') }}" class="btn-nav" style="display: inline-block; margin-top: 25px; background: linear-gradient(135deg, #00ffc8, #0077ff); padding: 10px 20px; border-radius: 40px; text-decoration: none; color: white; font-weight: bold;">🔁 Try Again</a>
+
+    {% else %}
+      <p style="font-size: 15px; color: #ccc;">Select your language and click on the mic to start speaking. When you're done, click Stop and Submit to get feedback.</p>
+
+      <div style="text-align: center; margin-bottom: 15px;">
+        <label for="languageSelect" style="color: #ccc;">🗂️ Choose Language:</label>
+        <select id="languageSelect" style="margin-left: 10px; padding: 5px 10px; border-radius: 8px;">
+          <option value="hi-IN">Hindi</option>
+          <option value="bn-IN">Bengali</option>
+          <option value="gu-IN">Gujarati</option>
+          <option value="kn-IN">Kannada</option>
+          <option value="ml-IN">Malayalam</option>
+          <option value="mr-IN">Marathi</option>
+          <option value="pa-IN">Punjabi</option>
+          <option value="ta-IN">Tamil</option>
+          <option value="te-IN">Telugu</option>
+          <option value="ur-IN">Urdu</option>
+          <option value="as-IN">Assamese</option>
+          <option value="or-IN">Odia</option>
+        </select>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <button id="recordBtn" class="btn-nav" style="background: linear-gradient(135deg, #00ffc8, #0077ff); padding: 10px 25px; border-radius: 40px; border: none; color: white; font-size: 16px;">🎤 Start Recording</button>
+        <button id="stopBtn" class="btn-nav" style="display:none; background: linear-gradient(135deg, #ff5e62, #ff9966); padding: 10px 25px; border-radius: 40px; border: none; color: white; font-size: 16px;">🛑 Stop</button>
+      </div>
+
+      <form id="speechForm" method="POST" action="{{ url_for('main.regional_translate') }}">
+        <input type="hidden" name="transcript" id="transcriptInput">
+        <button type="submit" id="submitBtn" class="btn-nav" style="margin-top: 30px; display:none; background: linear-gradient(135deg, #00ffc8, #0077ff); padding: 10px 25px; border-radius: 40px; text-decoration: none; color: white; font-weight: bold;">📩 Submit</button>
+      </form>
+
+      <p id="preview" style="margin-top: 25px; color: #ccc;"></p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  let recognition;
+  const recordBtn = document.getElementById('recordBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const transcriptInput = document.getElementById('transcriptInput');
+  const preview = document.getElementById('preview');
+  const languageSelect = document.getElementById('languageSelect');
+
+  if (recordBtn) {
+    recordBtn.onclick = () => {
+      const selectedLang = languageSelect.value || 'hi-IN';
+
+      recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = selectedLang;
+      recognition.interimResults = false;
+      recognition.continuous = false;
+
+      recognition.onstart = () => {
+        recordBtn.style.display = 'none';
+        stopBtn.style.display = 'inline-block';
+        preview.innerHTML = "🎙️ Listening...";
+      };
+
+      recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        transcriptInput.value = text;
+        preview.innerHTML = "✅ Captured: <i>" + text + "</i>";
+        submitBtn.style.display = 'inline-block';
+      };
+
+      recognition.onerror = (e) => {
+        preview.innerHTML = "❌ Error: " + e.error;
+      };
+
+      recognition.start();
+    };
+
+    stopBtn.onclick = () => {
+      recognition.stop();
+      stopBtn.style.display = 'none';
+      recordBtn.style.display = 'inline-block';
+    };
+  }
+</script>
+{% endblock %}

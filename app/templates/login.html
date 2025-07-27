@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CareerVani | Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container glass center fade-in">
+    <h2>Login to <span class="highlight">CareerVani</span></h2>
+    <form method="POST" class="form-3d">
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <button type="submit" class="btn-glow">Login</button>
+    </form>
+    <p>Don't have an account? <a href="{{ url_for('auth.signup') }}">Signup here</a></p>
+  </div>
+</body>
+</html>

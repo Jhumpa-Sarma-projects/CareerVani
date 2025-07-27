@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CareerVani | Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at center, #1c1c2d, #0a0a13);
+      color: white;
+      overflow-x: hidden;
+    }
+
+    .dashboard-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      border-radius: 20px;
+      padding: 20px 25px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      animation: popIn 0.8s ease;
+    }
+
+    .glass-card h2 {
+      margin-top: 0;
+      font-size: 22px;
+      color: #00ffc8;
+    }
+
+    .glass-card p {
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .btn-nav {
+      background: linear-gradient(135deg, #00ffc8, #0077ff);
+      padding: 10px 20px;
+      border: none;
+      border-radius: 40px;
+      font-size: 14px;
+      color: white;
+      text-decoration: none;
+      margin-top: 15px;
+      box-shadow: 0 0 10px #00ffc8;
+      transition: 0.3s ease;
+    }
+
+    .btn-nav:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 18px #00ffc8;
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .header {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      color: #ffffff;
+    }
+
+    .header span {
+      color: #00ffc8;
+    }
+
+    .glass-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      width: 100%;
+      max-width: 960px;
+      margin-bottom: 30px;
+    }
+
+    .feedback-history {
+      width: 100%;
+      max-width: 960px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 15px;
+      box-shadow: 0 6px 20px rgba(0, 255, 200, 0.04);
+      border-left: 4px solid #00ffc8;
+    }
+
+    .feedback-entry {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-left: 4px solid #00ffc8;
+    }
+
+    .feedback-entry h3 {
+      margin: 0 0 8px 0;
+      font-size: 17px;
+      color: #00ffc8;
+    }
+
+    .feedback-entry .timestamp {
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    .score.good { color: #00ff99; }
+    .score.mid { color: #ffaa00; }
+    .score.low { color: #ff4c4c; }
+    .score.regional { color: #8a2be2; }
+
+    .feedback-entry .badge {
+      margin: 5px 0;
+      font-weight: bold;
+    }
+
+    .feedback-entry .grammar {
+      color: #ccc;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .feedback-entry .transcript {
+      font-style: italic;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .no-history {
+      text-align: center;
+      color: #aaa;
+      margin-top: 20px;
+    }
+
+    details summary {
+      cursor: pointer;
+      font-size: 16px;
+      color: #00ffc8;
+      margin-bottom: 10px;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details summary::before {
+      content: "▶ ";
+      color: #00ffc8;
+    }
+
+    details[open] summary::before {
+      content: "▼ ";
+    }
+
+    .scrollable-history {
+      max-height: 300px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="header">
+      <h1>Welcome, <span>{{ name }}</span></h1>
+      <p>Your personalized career enhancement space</p>
+    </div>
+
+    <!-- Modules section -->
+    <div class="glass-grid">
+      <div class="glass-card">
+        <h2>🎹 Spoken English</h2>
+        <p>Analyze pronunciation, grammar, and get detailed reports with badges. Try now to improve fluency.</p>
+        <a href="/spoken" class="btn-nav">Start Speaking</a>
+      </div>
+
+      <div class="glass-card">
+        <h2>🌍 Regional Language Input</h2>
+        <p>Speak in your language and get translated + analyzed English feedback instantly.</p>
+        <a href="/regional_voice_input" class="btn-nav">Try Now</a>
+      </div>
+
+     <div class="glass-card">
+  <h2>📄 Mock Video Interview</h2>
+  <p>Try out the mock Video Interview In English (Supports Regional Language)</p>
+  <a href="/mock_interview" class="btn-nav">Start Interview</a>
+</div>
+
+    <!-- Feedback History (collapsible) -->
+    <div class="feedback-history">
+      <h2>📊 Your Feedback History</h2>
+      <details>
+        <summary>Click to expand your past feedback</summary>
+        <div class="scrollable-history">
+          {% if feedback_list %}
+            {% for entry in feedback_list %}
+              <div class="feedback-entry">
+                <div class="timestamp">🕒 {{ entry.timestamp.strftime('%d %b %Y %I:%M %p') }}</div>
+                <div class="transcript">🗒️ <b>Your Speech:</b> {{ entry.transcript }}</div>
+                <div class="score 
+                  {% if entry.pron_score is not none %}
+                    {% if entry.pron_score >= 8 %}good
+                    {% elif entry.pron_score >= 5 %}mid
+                    {% else %}low
+                    {% endif %}
+                  {% else %}regional
+                  {% endif %}
+                ">
+                  🔊 Pronunciation Score: 
+                  {% if entry.pron_score is not none %}
+                    {{ entry.pron_score }}/10
+                  {% else %}
+                    N/A (Regional)
+                  {% endif %}
+                </div>
+                <div class="badge">{{ entry.badge | safe }}</div>
+                <div class="grammar">🔍 <b>Grammar Feedback:</b><br>{{ entry.grammar_issues }}</div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="no-history">You haven’t submitted any speech yet. Try recording from the Spoken English page!</p>
+          {% endif %}
+        </div>
+      </details>
+    </div>
+  </div>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CareerVani | Spoken English</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      background: radial-gradient(ellipse at center, #1f1f2e, #0d0d15);
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      padding: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-glow {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #00ffc8, #0077ff);
+      border: none;
+      border-radius: 50px;
+      font-size: 18px;
+      cursor: pointer;
+      color: white;
+      box-shadow: 0 0 15px #00ffc8;
+      transition: all 0.3s ease;
+      margin: 5px;
+    }
+
+    .btn-glow:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px #00ffc8;
+    }
+
+    .pulse {
+      animation: pulseGlow 1.5s infinite;
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 15px #00ffc8; }
+      50% { box-shadow: 0 0 30px #00ffc8; }
+      100% { box-shadow: 0 0 15px #00ffc8; }
+    }
+
+    .highlight {
+      color: #00ffc8;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .fade-in {
+      animation: fadeIn 1s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    canvas {
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+
+    #timer {
+      font-size: 22px;
+      color: #00ffc8;
+      margin-top: 12px;
+    }
+
+    #result {
+      animation: slideUp 1s ease;
+      margin-top: 20px;
+      color: #ffffff;
+      background-color: rgba(0, 255, 200, 0.08);
+      border-left: 5px solid #00ffc8;
+      padding: 15px;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 6px solid #00ffc8;
+      border-top: 6px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container glass center fade-in">
+    <h2>🎤 Spoken English Evaluation</h2>
+    <p>Click the mic, speak a sentence or two, and get your feedback in seconds.</p>
+
+    <label for="lang" style="margin-top: 10px; font-weight: bold;">Choose Language:</label>
+    <select id="lang" class="btn-glow" style="margin-bottom: 10px;">
+      <option value="auto">Auto Detect</option>
+      <option value="en">English</option>
+      <option value="as">Assamese</option>
+      <option value="hi">Hindi</option>
+      <option value="bn">Bengali</option>
+      <option value="ta">Tamil</option>
+      <option value="te">Telugu</option>
+      <option value="kn">Kannada</option>
+      <option value="ml">Malayalam</option>
+      <option value="mr">Marathi</option>
+      <option value="gu">Gujarati</option>
+      <option value="pa">Punjabi</option>
+    </select>
+
+    <div>
+      <button id="recordBtn" class="btn-glow">🎙️ Tap to Speak</button>
+      <button id="retryBtn" class="btn-glow" style="background: #ff4d4d; display: none;">🔁 Retry</button>
+    </div>
+
+    <p id="status" class="highlight"></p>
+    <p id="timer"></p>
+
+    <canvas id="visualizer" width="300" height="100"></canvas>
+
+    <div id="loader" class="glass hidden">
+      <div class="spinner"></div>
+      <p style="color: #00ffc8;">⏳ Uploading and analyzing your speech... This may take 1–2 minutes.</p>
+    </div>
+
+    <div id="result" class="glass hidden"></div>
+  </div>
+
+  <script>
+    let chunks = [];
+    let mediaRecorder;
+    let audioContext, analyser, dataArray, canvasCtx;
+    let timerInterval, timeLeft = 5;
+
+    const recordBtn = document.getElementById("recordBtn");
+    const retryBtn = document.getElementById("retryBtn");
+    const status = document.getElementById("status");
+    const timer = document.getElementById("timer");
+    const canvas = document.getElementById("visualizer");
+    const langSelect = document.getElementById("lang");
+    const loader = document.getElementById("loader");
+    canvasCtx = canvas.getContext("2d");
+
+    recordBtn.onclick = async () => {
+      if (!mediaRecorder || mediaRecorder.state === "inactive") {
+        chunks = [];
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.start();
+        status.textContent = "🎙️ Recording... Tap again to stop.";
+        recordBtn.classList.add("pulse");
+        retryBtn.style.display = "none";
+
+        startVisualizer(stream);
+        startCountdown();
+
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+
+        mediaRecorder.onstop = async () => {
+          clearInterval(timerInterval);
+          stopVisualizer();
+
+          const blob = new Blob(chunks, { type: "audio/wav" });
+          const file = new File([blob], "recording.wav");
+          const formData = new FormData();
+          formData.append("audio", file);
+          formData.append("lang", langSelect.value);
+
+          status.textContent = "⏳ Uploading and analyzing...";
+          loader.classList.remove("hidden");
+
+          const res = await fetch("/analyze_speech", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await res.text();
+          loader.classList.add("hidden");
+          document.getElementById("result").classList.remove("hidden");
+          document.getElementById("result").innerHTML = data;
+          status.textContent = "✅ Analysis complete!";
+          recordBtn.classList.remove("pulse");
+          retryBtn.style.display = "inline-block";
+          timer.textContent = "";
+        };
+      } else {
+        mediaRecorder.stop();
+      }
+    };
+
+    retryBtn.onclick = () => {
+      chunks = [];
+      status.textContent = "";
+      timer.textContent = "";
+      recordBtn.classList.remove("pulse");
+      retryBtn.style.display = "none";
+      document.getElementById("result").classList.add("hidden");
+      document.getElementById("result").innerHTML = "";
+    };
+
+    function startCountdown() {
+      timeLeft = 5;
+      timer.textContent = `⏱️ Time left: ${timeLeft}s`;
+      timerInterval = setInterval(() => {
+        timeLeft -= 1;
+        timer.textContent = `⏱️ Time left: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          mediaRecorder.stop();
+        }
+      }, 1000);
+    }
+
+    function startVisualizer(stream) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioContext.createMediaStreamSource(stream);
+      analyser = audioContext.createAnalyser();
+      source.connect(analyser);
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      function draw() {
+        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+        analyser.getByteTimeDomainData(dataArray);
+        canvasCtx.beginPath();
+        for (let i = 0; i < dataArray.length; i++) {
+          const x = i * canvas.width / dataArray.length;
+          const y = (dataArray[i] / 255.0) * canvas.height;
+          canvasCtx.lineTo(x, y);
+        }
+        canvasCtx.strokeStyle = "#00ffc8";
+        canvasCtx.lineWidth = 2;
+        canvasCtx.stroke();
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    function stopVisualizer() {
+      if (audioContext) {
+        audioContext.close();
+        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+  </script>
+</body>
+</html>

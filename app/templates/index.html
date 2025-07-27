@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CareerVani | Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container glass center fade-in">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="CareerVani Logo" class="logo-3d">
+    <h1>Welcome to <span class="highlight">CareerVani</span></h1>
+    <img src="{{ url_for('static', filename='cover.jpg') }}" class="cover" alt="Cover Image">
+    <div class="btn-group">
+      <a href="{{ url_for('auth.login') }}" class="btn-glow">Login</a>
+      <a href="{{ url_for('auth.signup') }}" class="btn-glow">Signup</a>
+    </div>
+  </div>
+</body>
+</html>
+ 
