@@ -1,0 +1,16 @@
+git-filter-repo==2.47.0
+gunicorn==23.0.0
+packaging==25.0
+flask
+flask-login
+flask-mail
+flask-sqlalchemy
+email-validator
+python-dotenv
+language-tool-python
+pronouncing
+xhtml2pdf
+reportlab
+Pillow
+googletrans==4.0.0rc1
+httpx
