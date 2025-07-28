@@ -1,6 +1,7 @@
 git-filter-repo==2.47.0
 gunicorn==23.0.0
 packaging==25.0
+setuptools==80.9.0
 flask
 flask-login
 flask-mail
