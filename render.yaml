@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: careervani
+    env: python
+    region: oregon
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn run:app"
+    plan: free
+ 
